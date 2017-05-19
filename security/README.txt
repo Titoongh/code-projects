@@ -3,7 +3,8 @@ chmod u+x pass.sh
 
 Use the pass.sh script :
 Create a pass.txt file
-Write something in it
+Write something in it : 
+Pwgen -y -n 12
 run ./pass.sh edit
 define/enter main password to access file
 the file is deleted and save as .crypt
