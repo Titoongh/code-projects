@@ -3,7 +3,7 @@ import json
 import pandas as pd
 import numpy as np
 import random
-LEN_NAME = 4
+LEN_NAME = 5
 
 def find_next(alpha_mat,alpha_dic,idx):
     candidates = []
@@ -53,16 +53,9 @@ def find_last(alpha_mat,alpha_dic,idx):
     return candidates[r]
 
 
-with open('alphabet_dic.txt','r') as file:
-    alpha_dic = json.load(file)
-
-alpha_mat = pd.DataFrame().from_csv('alphabet_matrice.csv')
-alpha_mat = np.array(alpha_mat)
-print alpha_dic
-for t in range(100):
+def create_name(alpha_mat, alpha_dic,len_name = LEN_NAME):
     my_new_name = ''
-
-    for n in range(LEN_NAME):
+    for n in range(len_name):
         # print n
         if n >= 2 :
             # print my_new_name[n-2:n]
@@ -73,7 +66,7 @@ for t in range(100):
         else:
             idx = 27
 
-        if n != LEN_NAME -1:
+        if n != len_name -1:
             new = find_next(alpha_mat,alpha_dic,idx)
         else :
             # print my_new_name
@@ -82,6 +75,22 @@ for t in range(100):
             break
         my_new_name += new[-1]
         # if my_new_name[-1] == '0':
-    print 'YOUR NEW NAME IS : ',my_new_name
-    # exit()
+    # print 'YOUR NEW NAME IS : ',my_new_name
+    return my_new_name
+
+if __name__ == '__main__':
+
+    with open('alphabet_dic.txt','r') as file:
+        alpha_dic = json.load(file)
+
+    alpha_mat = pd.DataFrame().from_csv('alphabet_matrice.csv')
+    alpha_mat = np.array(alpha_mat)
+    print alpha_dic
+
+    df = pd.DataFrame(columns=['name'])
+    for t in range(100):
+        name = create_name(alpha_mat,alpha_dic)
+        df.loc[t,'name'] = name
+
+    df.to_csv('user_profile.csv')
 
