@@ -5,7 +5,15 @@ import matplotlib
 import matplotlib.pyplot as plt
 from find_my_name import find_next, find_last
 import pandas as pd
+from difflib import SequenceMatcher
+import editdist
+import unicodedata
+import fuzzy
+import sys
+sys.path.append('python-Levenshtein/Levenshtein')
+from StringMatcher import StringMatcher
 vowels = ['a','e','i','o','u','y',u'â',u'à',u'é',u'è',u'ë',u'ê',u'ï',u'î',u'ö',u'ô',u'ù',u'ü',u'û']
+
 
 
 def create_relations(alpha_dic):
@@ -51,23 +59,56 @@ def correl_name(name1,name2,rel_mat):
             score += rel_mat.ix[n1_c[j],n2_c[j]]
     return score
 
+def seq_matcher(name1,name2):
+    name1 = unicode(unicodedata.normalize('NFKD', name1).encode('ascii', 'ignore'),'utf-8')
+    name2 = unicode(name2,'utf-8')
+    name2 = unicode(unicodedata.normalize('NFKD', name2).encode('ascii', 'ignore'),'utf-8')
+
+    soundex = fuzzy.Soundex(4)
+    name1 = soundex(name1)
+    name2 = soundex(name2)
+
+    # dmeta = fuzzy.DMetaphone()
+    # name1 = dmeta(name1)[0]
+    # name2 = dmeta(name2)[0]
+
+    # name1 = fuzzy.nysiis(name1)
+    # name2 = fuzzy.nysiis(name2)
+
+    m = SequenceMatcher(None, name1, name2)
+    # Calculate an edit distance"abcef"
+    # print 'm',m.ratio()
+    e = editdist.distance(name1, name2)
+    # print 'e',e
+    sm = StringMatcher(seq1=name1,seq2=name2)
+    # return e
+    # print sm.distance()
+    return sm.distance()
+
+
 def score(name1,user_profil,rel_mat):
     mean_score = 0
+    # print 'name 1',name1
     for name2 in user_profil['name']:
-        score = correl_name(name1,name2,rel_mat)
-        if len(name1) >= len(name2) :
-            score /= correl_name(name1,name1,rel_mat)
-        else :
-            score /= correl_name(name2,name2,rel_mat)
+        # print 'name 2', name2
+        score = seq_matcher(name1,name2)
+        # score = correl_name(name1,name2,rel_mat)
+        # if len(name1) >= len(name2) :
+        #     score /= correl_name(name1,name1,rel_mat)
+        # else :
+        #     score /= correl_name(name2,name2,rel_mat)
         mean_score += score
-    mean_score /= len(user_profil)
-    return score
+    mean_score /= len(user_profil['name'])
+    return mean_score
 
 
 def evolve(pop,alpha_dic,alpha_mat,rel_mat,user_profil,retain=0.2, random_select=0.1, mutate=0.1):
     graded_score = [ (score(x,user_profil,rel_mat), x) for x in pop]
-    score_pop = sum([g[0] for g in graded_score])
-    graded = [ x[1] for x in sorted(graded_score,reverse=True)]
+    print graded_score
+    score_pop = sum([g[0] for g in graded_score])/float(len(graded_score))
+    # graded = [ x[1] for x in sorted(graded_score,reverse=True)]
+    graded = [ x[1] for x in sorted(graded_score,reverse=False)]
+    print graded
     retain_length = int(len(graded)*retain)
     parents = graded[:retain_length]
     # randomly add other individuals to
@@ -139,6 +180,8 @@ def evolve(pop,alpha_dic,alpha_mat,rel_mat,user_profil,retain=0.2, random_select
         child = male[:len_m]+female[len_f:]
         children.append(child)
     parents.extend(children)
+
+    print score_pop
     return parents, score_pop
 
 

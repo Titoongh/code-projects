@@ -3,6 +3,7 @@ import json
 import pandas as pd
 import numpy as np
 import random
+import unicodedata
 LEN_NAME = 5
 
 def find_next(alpha_mat,alpha_dic,idx):
@@ -90,6 +91,9 @@ if __name__ == '__main__':
     df = pd.DataFrame(columns=['name'])
     for t in range(100):
         name = create_name(alpha_mat,alpha_dic)
+
+        name = unicode(unicodedata.normalize('NFKD', name).encode('ascii', 'ignore'),'utf-8')
+        # name = unicode(name,'utf-8')
         df.loc[t,'name'] = name
 
     df.to_csv('user_profile.csv')
