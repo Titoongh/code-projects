@@ -23,6 +23,7 @@ for i in range(len_pop):
     len_name = np.random.randint(4,9)
     pop.append(create_name(alpha_mat,alpha_dic,len_name= len_name))
 for j in range(nb_gen):
+    #modifier fonction de name mixing pour creer quelque chose de plausible
     #gerer erreur dic
     print j
     #penser a supprimer les noms egaux
